@@ -25,6 +25,7 @@ __global__ void processTile(int *tile_data, int start_x, int start_y, int width,
   tile_data[tile_idx] = global_idx;
 }
 
+// 데이터 분할 프로세스.
 void runProcess(int *h_tile_data, int sm_id, int tile_size) {
   int partition_size = WIDTH / tile_size;
   int block_x, block_y;
@@ -53,6 +54,7 @@ void runProcess(int *h_tile_data, int sm_id, int tile_size) {
   cudaFree(d_tile_data);
 }
 
+//생성된 데이터를 메시지 큐로 서로 간에 데이터 공유.
 void processSM(int sm_id, int *sm_data, int msg_queue_id, int num_procs,
                int tile_size) {
   struct mymsgbuf msg;
@@ -118,6 +120,7 @@ int main(int argc, char *argv[]) {
 
   runProcess(h_tile_data, sm_id, tile_size);
   // h_tile_data에 각 sm의 데이터가 모임.
+  // h_title_data[y * WIDTH + x]
   processSM(sm_id, h_tile_data, msgid, 8, tile_size);
 
   // printf("sm %d :", sm_id);
