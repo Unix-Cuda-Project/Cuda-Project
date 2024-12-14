@@ -15,6 +15,18 @@ SERVER_NAME = server
 SRC_DIR = src
 OBJ_DIR = obj
 
+SM_DIR =	sm0 \
+					sm1 \
+					sm2 \
+					sm3 \
+					sm4 \
+					sm5 \
+					sm6 \
+					sm7 
+
+SERV_DIR	=	server0 \
+						server1
+
 # 소스 파일
 CUDA_SRC =	$(SRC_DIR)/smCuda.cu \
 						$(SRC_DIR)/file_create.c \
@@ -34,10 +46,12 @@ SERVER_OBJ =	$(OBJ_DIR)/server.o \
 all: $(CLIENT_NAME) $(SERVER_NAME)
 
 $(CLIENT_NAME): $(CUDA_OBJ) $(C_OBJ)
+	@mkdir -p $(SM_DIR)
 	$(CC) $(CFLAGS) $(C_OBJ) -o $@
 	$(NVCC) $(NVCC_FLAGS) -o a.out $(CUDA_OBJ)
 
 $(SERVER_NAME): $(SERVER_OBJ)
+	@mkdir -p $(SERV_DIR)
 	$(CC) $(CFLAGS) $(SERVER_OBJ) -o $@ 
 
 # CUDA 소스 파일 컴파일
@@ -54,13 +68,14 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 
 # 클린업
 clean:
-	rm -f $(CLIENT_NAME) $(SERVER_NAME) $(SERVER_OBJ) $(CUDA_OBJ) $(C_OBJ) a.out
+	rm -rf $(SERVER_OBJ) $(CUDA_OBJ) $(C_OBJ)
 	find . -name "*.txt" -type f -delete
 
-textClean:
-	find . -name "*.txt" -type f -delete
+fclean:
+	rm -rf $(CLIENT_NAME) $(SERVER_NAME) $(SERV_DIR) $(SM_DIR)  a.out
+
 re:
 	make clean
 	make all
 
-.PHONY: all clean re
+.PHONY: all clean re fclean

@@ -39,13 +39,13 @@ void writeDataToFile(const char *filename, int *data,
 
 void createFilename(char *filename, const char *str1,
                     const char *str2, int id, int i) {
-  strcat(filename, str1);
-
   // sm_id 추가
   int tmp_id = id;
   char str[10];
   int len = 0;
   int pos = 0;
+
+  if (str1) strcat(filename, str1);
 
   if (id >= 0) {
     do {
@@ -60,7 +60,7 @@ void createFilename(char *filename, const char *str1,
     }
   }
 
-  strcat(filename, str2);
+  if (str2) strcat(filename, str2);
 
   // i 추가
   if (i >= 0) {

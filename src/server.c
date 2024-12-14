@@ -30,15 +30,16 @@ void child_run(int server_id) {
   if (listen(server_fd, 8) < 0) err_exit("Listen failed");
 
   for (int i = 0; i < 8; ++i) {
+    char filename[100] = {0};
+
     client_fd = accept(
         server_fd, (struct sockaddr *)&address, &addrlen);
-    if (client_fd < 0) perror("?");
     len = recv(client_fd, buffer, sizeof(buffer), 0);
 
-    // printf("\t%d %d\n", server_id, i + 1);
-    for (int j = 0; j < len / 4; ++j)
-      printf("%d ", buffer[j]);
-    printf("\n");
+    createFilename(filename, "server", "_", server_id,
+                   buffer[0] / 2048);
+    dirCat(filename, server_id, "server");
+    writeDataToFile(filename, buffer, len / 4);
     close(client_fd);
   }
 }

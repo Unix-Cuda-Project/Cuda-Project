@@ -20,7 +20,6 @@ int main(int argc, char *argv[]) {
     if (pid == 0) {
       execv("./a.out", av);
       exit(1);
-    } else if (pid > 0) {
     }
   }
 
