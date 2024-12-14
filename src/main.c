@@ -1,13 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
-
-#define WIDTH 16
+#include "header.h"
 
 int main(int argc, char *argv[]) {
   pid_t pid;
@@ -20,7 +11,6 @@ int main(int argc, char *argv[]) {
   msgid = msgget(key, 0666 | IPC_CREAT);
 
   for (int i = 0; i < 8; ++i) {
-
     av[1] = malloc(sizeof(char) * 10);
     av[2] = malloc(sizeof(char) * 10);
     sprintf(av[1], "%d", i);
@@ -34,8 +24,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  for (int i = 0; i < 8; ++i)
-    wait(NULL);
+  for (int i = 0; i < 8; ++i) wait(NULL);
 
   msgctl(msgid, IPC_RMID, NULL);
   return 0;
