@@ -9,7 +9,6 @@ void dirCat(char *filename, int id, const char *str) {
   char buf[3];
   char dir[100] = {0};
 
-  printf("%s\n", filename);
   sprintf(buf, "%d/", id);
   strcpy(dir, str);
   strcat(dir, buf);

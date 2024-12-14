@@ -64,6 +64,9 @@ int main(int argc, char *argv[]) {
   int h_tile_data[partition_size * partition_size * 8] = {0};
   int final_data[WIDTH * WIDTH / 8];
 
+  int sock = 0;
+  struct sockaddr_in serv_addr;
+
   key = ftok(".", 65);
   if (key == -1)
     perror("ftok");
@@ -71,11 +74,9 @@ int main(int argc, char *argv[]) {
   msgid = msgget(key, 0666 | IPC_CREAT);
 
   runProcess(h_tile_data, sm_id, tile_size);
+  memset((int *)final_data, -1, sizeof(final_data));
   // h_tile_data에 각 sm의 데이터가 모임.
   processSM(sm_id, h_tile_data, msgid, 8, tile_size, final_data);
-
-  int sock = 0;
-  struct sockaddr_in serv_addr;
 
   if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     err_exit("Socket");

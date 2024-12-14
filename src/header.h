@@ -15,14 +15,14 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#define WIDTH 16
+#define WIDTH 128
 #define PORT 8080
 #define MAX_CLIENTS 8
 #define BUFFER_SIZE 1024
 
 struct mymsgbuf {
   long mtype;
-  int mtext[1024];
+  int mtext[1025];
 };
 
 #ifdef __cplusplus

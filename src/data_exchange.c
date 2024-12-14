@@ -18,9 +18,12 @@ void processSM(int sm_id, int *sm_data, int msg_queue_id,
       msg.mtext[j] = sm_data[i + j];
 
     if (msgsnd(msg_queue_id, &msg, sizeof(int) * msg_size,
-               0) == -1) {
-      perror("msgsnd");
-      exit(1);
+               0) == -1)
+      perror("msgrcv");
+    if (msgrcv(msg_queue_id, &msg, sizeof(int) * msg_size,
+               msg.mtype, IPC_NOWAIT) > 0) {
+      for (int j = 0; j < msg_size; j++)
+        final_data[i + j] = msg.mtext[j];
     }
   }
 
@@ -30,14 +33,13 @@ void processSM(int sm_id, int *sm_data, int msg_queue_id,
     long mtype =
         total_data_size / num_procs * sm_id + i + 1;
 
-    if (msgrcv(msg_queue_id, &msg, sizeof(int) * msg_size,
-               mtype, 0) == -1) {
-      perror("msgrcv");
-      exit(1);
+    if (final_data[i] == -1) {
+      if (msgrcv(msg_queue_id, &msg, sizeof(int) * msg_size,
+                 mtype, 0) == -1)
+        err_exit("msgrcv");
+      for (int j = 0; j < msg_size; j++)
+        final_data[i + j] = msg.mtext[j];
     }
-
-    for (int j = 0; j < msg_size; j++)
-      final_data[i + j] = msg.mtext[j];
   }
 
   // 데이터 파일에 기록
@@ -49,8 +51,9 @@ void processSM(int sm_id, int *sm_data, int msg_queue_id,
                   total_data_size / num_procs);
 
   // 3. 최종 데이터 출력
-  printf("SM %d final data: ", sm_id);
-  for (int i = 0; i < total_data_size / num_procs; i++)
-    printf("%3d ", final_data[i]);
-  printf("\n");
+  //   printf("SM %d final data: ", sm_id);
+  //   for (int i = 0; i < total_data_size / num_procs; i++)
+  //     printf("%3d ", final_data[i]);
+  //   printf("\n");
+  // }
 }
