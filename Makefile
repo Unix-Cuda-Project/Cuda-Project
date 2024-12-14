@@ -72,6 +72,7 @@ clean:
 	find . -name "*.txt" -type f -delete
 
 fclean:
+	make clean
 	rm -rf $(CLIENT_NAME) $(SERVER_NAME) $(SERV_DIR) $(SM_DIR)  a.out
 
 re:
