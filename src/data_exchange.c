@@ -4,13 +4,15 @@ void processSM(int sm_id, int *sm_data, int msg_queue_id,
                int num_procs, int tile_size,
                int *final_data) {
   struct mymsgbuf msg;
+  struct timeval start, end;
+  long seconds, microseconds;
+  double ms;
   int total_data_size = WIDTH * WIDTH;
   int msg_size = WIDTH / tile_size;
-  // 데이터 파일에 저장할 경로
   char filename[100] = {0};
   long type_id = total_data_size / num_procs * sm_id;
 
-  // 1. 다른 프로세스한테 데이터를 메시지 큐로 송신.
+  gettimeofday(&start, NULL);
   for (int i = 0; i < total_data_size / num_procs;
        i += msg_size) {
     msg.mtype = sm_data[i] + 1;
@@ -39,6 +41,13 @@ void processSM(int sm_id, int *sm_data, int msg_queue_id,
              sizeof(int) * msg_size);
     }
   }
+  gettimeofday(&end, NULL);
+
+  seconds = end.tv_sec - start.tv_sec;
+  microseconds = end.tv_usec - start.tv_usec;
+  ms = (seconds * 1000) + (microseconds / 1000.0);
+  printf("sm%d Client-Client Communication : %f ms\n",
+         sm_id, ms);
 
   // 데이터 파일에 기록
   createFilename(filename, "sm", "_sequence_data", sm_id,

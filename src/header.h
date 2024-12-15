@@ -11,6 +11,7 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -22,7 +23,7 @@
 
 struct mymsgbuf {
   long mtype;
-  int mtext[1025];
+  int mtext[BUFFER_SIZE];
 };
 
 #ifdef __cplusplus

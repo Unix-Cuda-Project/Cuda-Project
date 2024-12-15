@@ -11,13 +11,15 @@ int main(int argc, char *argv[]) {
   msgid = msgget(key, 0666 | IPC_CREAT);
 
   for (int i = 0; i < 8; ++i) {
-    av[1] = malloc(sizeof(char) * 10);
-    av[2] = malloc(sizeof(char) * 10);
+    av[1] = (char *)malloc(sizeof(char) * 10);
+    av[2] = (char *)malloc(sizeof(char) * 10);
     sprintf(av[1], "%d", i);
     strcpy(av[2], argv[1]);
 
     pid = fork();
-    if (pid == 0) {
+    if (pid < 0) {
+      perror("fork");
+    } else if (pid == 0) {
       execv("./a.out", av);
       exit(1);
     }

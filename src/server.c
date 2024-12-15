@@ -1,34 +1,35 @@
 #include "header.h"
 
+void recv_all(char *buffer, int fd) {
+  int len_sum = 0, len = 0;
+
+  int io_size = 1024 * sizeof(int);
+
+  while (len_sum < io_size) {
+    len = recv(fd, buffer + len_sum, io_size - len, 0);
+    if (len < 0) {
+      printf("%d\n", len_sum);
+      err_exit("recv");
+    }
+    len_sum += len;
+  }
+}
+
 void child_run(int server_id) {
-  int server_fd, len;
+  int server_fd, i;
   struct sockaddr_in address;
   socklen_t addrlen = sizeof(address);
-  int buffer[BUFFER_SIZE];
+  char buffer[BUFFER_SIZE * sizeof(int)];
   int clients_fd[8];
-  int sndbuf, rcvbuf;
-  socklen_t optlen = sizeof(sndbuf);
-  int i;
+
+  struct timeval start, end;
+  long seconds, microseconds;
+  double ms;
 
   // 2. 서버 소켓 생성
   if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     err_exit("Socket failed");
 
-  // if (getsockopt(server_fd, SOL_SOCKET, SO_SNDBUF,
-  // &sndbuf,
-  //                &optlen) < 0)
-  //   err_exit("getsockopt");
-  // printf("송신 버퍼 크기: %d\n", sndbuf);
-
-  rcvbuf = 262144;
-  if (setsockopt(server_fd, SOL_SOCKET, SO_RCVBUF, &rcvbuf,
-                 sizeof(rcvbuf)) < 0)
-    err_exit("setsockopt");
-  if (getsockopt(server_fd, SOL_SOCKET, SO_RCVBUF, &rcvbuf,
-                 &optlen) < 0)
-    err_exit("getsockopt");
-  printf("수신 버퍼 크기: %d\n", rcvbuf);
-  // 3. 소켓 옵션 설정 (포트 재사용)
   int opt = 1;
   if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt,
                  sizeof(opt)) < 0)
@@ -50,21 +51,28 @@ void child_run(int server_id) {
   for (i = 0; i < 8; ++i) {
     clients_fd[i] = accept(
         server_fd, (struct sockaddr *)&address, &addrlen);
-    printf("server%d Accept : %d\n", server_id, i);
   }
 
+  gettimeofday(&start, NULL);
   for (i = 0; i < 8; ++i) {
     char filename[100] = {0};
+    int first_val;
 
-    len = recv(clients_fd[i], buffer, sizeof(buffer), 0);
-    if (len < 0) perror("recv");
+    recv_all(buffer, clients_fd[i]);
 
+    memcpy(&first_val, buffer, 4);
     createFilename(filename, "server", "_", server_id,
-                   buffer[0] / 2048);
+                   first_val / 2048);
     dirCat(filename, server_id, "server");
-    writeDataToFile(filename, buffer, len / 4);
+    writeDataToFile(filename, (int *)buffer, 1024);
     close(clients_fd[i]);
   }
+  gettimeofday(&end, NULL);
+  seconds = end.tv_sec - start.tv_sec;
+  microseconds = end.tv_usec - start.tv_usec;
+  ms = (seconds * 1000) + (microseconds / 1000.0);
+
+  printf("Server%d ServerIO : %f ms\n", server_id, ms);
 }
 
 int main() {

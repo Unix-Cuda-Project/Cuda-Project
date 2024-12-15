@@ -44,7 +44,6 @@ void createFilename(char *filename, const char *str1,
   char str[10];
   int len = 0;
   int pos = 0;
-  int j;
 
   if (str1) strcat(filename, str1);
 
@@ -56,7 +55,7 @@ void createFilename(char *filename, const char *str1,
     } while (tmp_id > 0);
 
     pos = strlen(filename);
-    for (j = len - 1; j >= 0; --j) {
+    for (int j = len - 1; j >= 0; --j) {
       filename[pos++] = str[j];
     }
   }
@@ -75,7 +74,7 @@ void createFilename(char *filename, const char *str1,
 
     // i를 반대로 추가
     pos = strlen(filename);
-    for (j = len - 1; j >= 0; --j) {
+    for (int j = len - 1; j >= 0; --j) {
       filename[pos++] = str[j];
     }
   }

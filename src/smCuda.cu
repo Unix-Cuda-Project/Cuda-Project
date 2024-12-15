@@ -64,8 +64,11 @@ int main(int argc, char *argv[]) {
   int h_tile_data[partition_size * partition_size * 8] = {0};
   int final_data[WIDTH * WIDTH / 8];
 
-  int sock = 0;
+  int sock = 0, sock2 = 0;
   struct sockaddr_in serv_addr;
+  struct timeval start, end;
+  long seconds, microseconds;
+  double ms;
 
   key = ftok(".", 65);
   if (key == -1)
@@ -78,7 +81,9 @@ int main(int argc, char *argv[]) {
   // h_tile_data에 각 sm의 데이터가 모임.
   processSM(sm_id, h_tile_data, msgid, 8, tile_size, final_data);
 
-  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+  gettimeofday(&start, NULL);
+  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0 ||
+      (sock2 = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     err_exit("Socket");
 
   serv_addr.sin_family = AF_INET;
@@ -88,23 +93,32 @@ int main(int argc, char *argv[]) {
   if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     err_exit("Connect");
 
-  if (send(sock, final_data, sizeof(final_data) / 2, 0) < 0)
-    err_exit("Send");
-
-  close(sock);
-
-  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-    err_exit("Socket");
-
   serv_addr.sin_port = htons(PORT + 1);
 
-  if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+  if (connect(sock2, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     err_exit("Connect");
 
-  if (send(sock, final_data + sizeof(final_data) / 8, sizeof(final_data) / 2,
-           0) < 0)
-    err_exit("Send");
+  for (int i = 0; i < WIDTH * WIDTH / 16;
+       i += partition_size * partition_size) {
+    if (send(sock, (int *)(final_data + i),
+             sizeof(int) * partition_size * partition_size, 0) < 0)
+      err_exit("Send");
+    if (send(sock2, (int *)(final_data + WIDTH * WIDTH / 16 + i),
+             sizeof(int) * partition_size * partition_size, 0) < 0)
+      err_exit("Send2");
+  }
+  gettimeofday(&end, NULL);
+  seconds = end.tv_sec - start.tv_sec;
+  microseconds = end.tv_usec - start.tv_usec;
+  ms = (seconds * 1000) + (microseconds / 1000.0);
+
+  recv(sock, final_data, 1, 0);
+  recv(sock2, final_data, 1, 0);
+
   close(sock);
+  close(sock2);
+
+  printf("sm%d Client-Server Communication : %f ms\n", sm_id, ms);
 
   return 0;
 }

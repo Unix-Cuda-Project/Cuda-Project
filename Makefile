@@ -5,8 +5,8 @@ NVCC = nvcc
 CC = gcc
 
 # 컴파일 플래그 설정
-NVCC_FLAGS = -arch=sm_75 -I. -g
-CFLAGS = -Wall -g
+NVCC_FLAGS = -arch=sm_75 -I.
+CFLAGS = -Wall
 
 # 타겟 실행 파일 이름
 CLIENT_NAME = client
@@ -44,6 +44,7 @@ SERVER_OBJ =	$(OBJ_DIR)/server.o \
 
 # 기본 타겟
 all: $(CLIENT_NAME) $(SERVER_NAME)
+# $(CC) $(CFLAGS) $(CUDA_OBJ) -o a.out -lcudart -L/usr/lib/x86_64-linux-gnu
 
 $(CLIENT_NAME): $(CUDA_OBJ) $(C_OBJ)
 	@mkdir -p $(SM_DIR)
@@ -76,7 +77,7 @@ fclean:
 	rm -rf $(CLIENT_NAME) $(SERVER_NAME) $(SERV_DIR) $(SM_DIR)  a.out
 
 re:
-	make clean
+	make fclean
 	make all
 
 .PHONY: all clean re fclean
